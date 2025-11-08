@@ -37,11 +37,11 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
   }
 
   if (search) {
-    where.OR = [
-      { title: { contains: search, mode: "insensitive" } },
-      { description: { contains: search, mode: "insensitive" } },
-    ]
-  }
+  where.OR = [
+    { title: { contains: search } },
+    { description: { contains: search } },
+  ]
+}
 
   // Build sort conditions
   let orderBy: any = { createdAt: "desc" }
@@ -100,7 +100,7 @@ export default async function BrowsePage({ searchParams }: BrowsePageProps) {
 
         {/* Stories Grid */}
         {stories.length > 0 ? (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             {stories.map((story) => (
               <Link
                 key={story.id}

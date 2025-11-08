@@ -1,34 +1,12 @@
-import NextAuth, { DefaultSession } from "next-auth"
+import NextAuth from "next-auth"
 import { PrismaAdapter } from "@auth/prisma-adapter"
+import { prisma } from "@/lib/prisma"
 import Credentials from "next-auth/providers/credentials"
 import Google from "next-auth/providers/google"
 import GitHub from "next-auth/providers/github"
 import { compare } from "bcryptjs"
-import { prisma } from "@/lib/prisma"
-import { z } from "zod"
 
-// Extend the session type
-declare module "next-auth" {
-  interface Session {
-    user: {
-      id: string
-      username?: string
-      avatar?: string
-    } & DefaultSession["user"]
-  }
-
-  interface User {
-    username?: string
-    avatar?: string
-  }
-}
-
-const loginSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-})
-
-export const { handlers, signIn, signOut, auth } = NextAuth({
+export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
     strategy: "jwt",
@@ -38,50 +16,52 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     error: "/login",
   },
   providers: [
-    Google({
-      clientId: process.env.GOOGLE_CLIENT_ID,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
-    GitHub({
-      clientId: process.env.GITHUB_ID,
-      clientSecret: process.env.GITHUB_SECRET,
-      allowDangerousEmailAccountLinking: true,
-    }),
     Credentials({
+      name: "credentials",
       credentials: {
         email: { label: "Email", type: "email" },
         password: { label: "Password", type: "password" },
       },
-      authorize: async (credentials) => {
-        try {
-          const { email, password } = loginSchema.parse(credentials)
-
-          const user = await prisma.user.findUnique({
-            where: { email },
-          })
-
-          if (!user || !user.password) {
-            throw new Error("Invalid email or password")
-          }
-
-          const isPasswordValid = await compare(password, user.password)
-
-          if (!isPasswordValid) {
-            throw new Error("Invalid email or password")
-          }
-
-          return {
-            id: user.id,
-            email: user.email,
-            name: user.name,
-            username: user.username,
-            avatar: user.avatar,
-          }
-        } catch {
+      async authorize(credentials) {
+        if (!credentials?.email || !credentials?.password) {
           return null
         }
+
+        const user = await prisma.user.findUnique({
+          where: {
+            email: credentials.email as string,
+          },
+        })
+
+        if (!user || !user.password) {
+          return null
+        }
+
+        const isPasswordValid = await compare(
+          credentials.password as string,
+          user.password
+        )
+
+        if (!isPasswordValid) {
+          return null
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          username: user.username,
+          avatar: user.avatar,
+        }
       },
+    }),
+    Google({
+      clientId: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    }),
+    GitHub({
+      clientId: process.env.GITHUB_ID,
+      clientSecret: process.env.GITHUB_SECRET,
     }),
   ],
   callbacks: {
@@ -91,62 +71,23 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
         token.username = user.username
         token.avatar = user.avatar
       }
-
-      // Update token when session is updated
+      
+      // Handle session updates
       if (trigger === "update" && session) {
-        token = { ...token, ...session }
+        token.name = session.user.name
+        token.avatar = session.user.avatar
       }
-
+      
       return token
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.id = token.id as string
-        session.user.username = token.username as string | undefined
-        session.user.avatar = token.avatar as string | undefined
+        session.user.id = token.id
+        session.user.username = token.username
+        session.user.avatar = token.avatar
       }
       return session
     },
-    async signIn({ user, account }) {
-      // For OAuth providers, ensure username is set
-      if (account?.provider !== "credentials" && user.email) {
-        const existingUser = await prisma.user.findUnique({
-          where: { email: user.email },
-        })
-
-        if (existingUser && !existingUser.username) {
-          // Generate unique username from email
-          const baseUsername = user.email.split("@")[0].toLowerCase()
-          let username = baseUsername
-          let counter = 1
-
-          while (
-            await prisma.user.findUnique({
-              where: { username },
-            })
-          ) {
-            username = `${baseUsername}${counter}`
-            counter++
-          }
-
-          await prisma.user.update({
-            where: { id: existingUser.id },
-            data: { 
-              username,
-              avatar: user.image || existingUser.avatar,
-            },
-          })
-        }
-      }
-
-      return true
-    },
   },
-  events: {
-    async createUser({ user }) {
-      console.log("New user created:", user.email)
-      // TODO: Send welcome email
-    },
-  },
-  debug: process.env.NODE_ENV === "development",
+  debug: false,
 })
