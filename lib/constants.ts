@@ -8,7 +8,6 @@ export const GENRES = [
   'Mystery',
   'Thriller',
   'Science Fiction',
-  'Folklore',
   'Biography',
   'Religious',
   'Other'
