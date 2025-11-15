@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/navbar"
+import Navbar from "@/components/navbar" // Correct: default import
 
 export default function MainLayout({
   children,
@@ -8,7 +8,7 @@ export default function MainLayout({
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-[#FAFAFA]">
+      <main className="min-h-screen bg-parchment text-text-primary">
         {children}
       </main>
     </>
