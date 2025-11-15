@@ -8,27 +8,38 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Primary brand color - Coral/Terracotta
         primary: {
-          DEFAULT: '#FF6B6B',
-          dark: '#FF5252',
-          light: '#FF8A8A',
+          DEFAULT: "#694873",
+          dark: "#694873",
+          light: "#694873",
         },
+        // Secondary brand color - Teal
         secondary: {
-          DEFAULT: '#00897B',
-          dark: '#00796B',
-          light: '#4DB6AC',
+          DEFAULT: "#00897B",
+          dark: "#00796B",
+          light: "#009688",
         },
+        // Accent color - Gold
         accent: {
-          DEFAULT: '#FFD54F',
-          dark: '#FFC107',
-          light: '#FFE082',
+          DEFAULT: "#FFD54F",
+          dark: "#FFC107",
+          light: "#FFEB3B",
         },
-        background: '#FAFAFA',
-        surface: '#FFFFFF',
-        textPrimary: '#2E3440',
-        textSecondary: '#6B7280',
+        // Background colors
+        background: "#FAFAFA",
+        surface: "#FFFFFF",
+        parchment: "#FAFAFA",
+        
+        // Text colors
+        text: {
+          primary: "#2B2B2B",
+          secondary: "#5F5F5F",
+        },
+        textPrimary: "#2B2B2B",
+        textSecondary: "#5F5F5F",
       },
     },
   },
   plugins: [],
-};
+}
