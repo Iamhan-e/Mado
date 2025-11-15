@@ -1,117 +1,169 @@
 "use client"
 
 import Link from "next/link"
+import { Button } from "@/components/ui/button"
 import { useCurrentUser } from "@/hooks/use-current-user"
-import { Button } from "./ui/button"
 import { signOut } from "next-auth/react"
-import { User, LogOut, BookOpen, PenSquare } from "lucide-react"
+import { BookOpen, PenTool, Search, User, LogOut, Menu, X, Settings } from "lucide-react"
+import { useState } from "react"
 
-export function Navbar() {
-  const { user, isAuthenticated, isLoading } = useCurrentUser()
+export default function Navbar() {
+  const { user, isAuthenticated } = useCurrentUser()
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   return (
-    <nav className="bg-white border-b border-gray-200 sticky top-0 z-50">
+    <nav className="bg-surface border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center space-x-2">
-            <BookOpen className="h-8 w-8 text-[#FF6B6B]" />
-            <span className="text-2xl font-bold text-[#FF6B6B]">Mado</span>
+          <Link href="/" className="flex items-center gap-2 text-2xl font-bold text-primary">
+            <BookOpen className="h-8 w-8" />
+            <span>Mado</span>
           </Link>
 
-          {/* Navigation Links */}
-          <div className="hidden md:flex items-center space-x-6">
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center gap-6">
             <Link
               href="/browse"
-              className="text-gray-700 hover:text-[#FF6B6B] transition-colors"
+              className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors"
             >
-              Browse
+              <Search className="h-5 w-5" />
+              <span>Browse</span>
             </Link>
-            <Link
-              href="/genres"
-              className="text-gray-700 hover:text-[#FF6B6B] transition-colors"
-            >
-              Genres
-            </Link>
-          </div>
 
-          {/* Auth Buttons */}
-          <div className="flex items-center space-x-4">
-            {isLoading ? (
-              <div className="h-10 w-24 bg-gray-200 animate-pulse rounded-lg"></div>
-            ) : isAuthenticated && user ? (
+            {isAuthenticated ? (
               <>
-                <Link href="/write">
-                  <Button variant="secondary" className="hidden sm:flex">
-                    <PenSquare className="h-4 w-4 mr-2" />
-                    Write
-                  </Button>
+                <Link
+                  href="/write"
+                  className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors"
+                >
+                  <PenTool className="h-5 w-5" />
+                  <span>Write</span>
                 </Link>
 
-                <div className="relative group">
-                  <button className="flex items-center space-x-2 hover:opacity-80 transition-opacity">
-                    {user.avatar ? (
-                      <img
-                        src={user.avatar}
-                        alt={user.name || "User"}
-                        className="h-10 w-10 rounded-full border-2 border-[#FF6B6B]"
-                      />
-                    ) : (
-                      <div className="h-10 w-10 rounded-full bg-[#FF6B6B] flex items-center justify-center text-white font-semibold">
-                        {user.name?.[0]?.toUpperCase() || user.email?.[0]?.toUpperCase()}
-                      </div>
-                    )}
-                  </button>
+                <Link
+                  href={`/profile/${user?.username}`}
+                  className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors"
+                >
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name || "User"}
+                      className="h-8 w-8 rounded-full border-2 border-primary object-cover"
+                    />
+                  ) : (
+                    <User className="h-5 w-5" />
+                  )}
+                  <span>{user?.name || user?.username || "Profile"}</span>
+                </Link>
 
-                  {/* Dropdown Menu */}
-                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
-                    <div className="py-2">
-                      <div className="px-4 py-2 border-b border-gray-100">
-                        <p className="text-sm font-medium text-gray-900">
-                          {user.name}
-                        </p>
-                        <p className="text-xs text-gray-500">@{user.username}</p>
-                      </div>
+                <Link
+                  href="/settings/profile"
+                  className="flex items-center gap-2 text-textSecondary hover:text-primary transition-colors"
+                  title="Settings"
+                >
+                  <Settings className="h-5 w-5" />
+                </Link>
 
-                      <Link
-                        href={`/profile/${user.username}`}
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
-                      >
-                        <User className="h-4 w-4 mr-2" />
-                        Profile
-                      </Link>
-
-                      <Link
-                        href="/write"
-                        className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors md:hidden"
-                      >
-                        <PenSquare className="h-4 w-4 mr-2" />
-                        Write
-                      </Link>
-
-                      <button
-                        onClick={() => signOut({ callbackUrl: "/" })}
-                        className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                      >
-                        <LogOut className="h-4 w-4 mr-2" />
-                        Sign Out
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <button
+                  onClick={() => signOut({ callbackUrl: "/" })}
+                  className="flex items-center gap-2 text-textPrimary hover:text-red-600 transition-colors"
+                >
+                  <LogOut className="h-5 w-5" />
+                  <span>Logout</span>
+                </button>
               </>
             ) : (
-              <>
+              <div className="flex items-center gap-4">
                 <Link href="/login">
-                  <Button variant="ghost">Sign In</Button>
+                  <Button variant="ghost">Login</Button>
                 </Link>
                 <Link href="/register">
-                  <Button variant="primary">Get Started</Button>
+                  <Button variant="primary">Sign Up</Button>
                 </Link>
-              </>
+              </div>
             )}
           </div>
+
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="md:hidden text-textPrimary"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile Navigation */}
+        {mobileMenuOpen && (
+          <div className="md:hidden py-4 border-t border-gray-200 bg-parchment">
+            <div className="flex flex-col gap-4">
+              <Link
+                href="/browse"
+                className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors px-4 py-2"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                <Search className="h-5 w-5" />
+                <span>Browse</span>
+              </Link>
+
+              {isAuthenticated ? (
+                <>
+                  <Link
+                    href="/write"
+                    className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors px-4 py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <PenTool className="h-5 w-5" />
+                    <span>Write</span>
+                  </Link>
+
+                  <Link
+                    href={`/profile/${user?.username}`}
+                    className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors px-4 py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <User className="h-5 w-5" />
+                    <span>Profile</span>
+                  </Link>
+
+                  <Link
+                    href="/settings/profile"
+                    className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors px-4 py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    <Settings className="h-5 w-5" />
+                    <span>Settings</span>
+                  </Link>
+
+                  <button
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      signOut({ callbackUrl: "/" })
+                    }}
+                    className="flex items-center gap-2 text-textPrimary hover:text-red-600 transition-colors px-4 py-2"
+                  >
+                    <LogOut className="h-5 w-5" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <div className="flex flex-col gap-2 px-4">
+                  <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="ghost" className="w-full">
+                      Login
+                    </Button>
+                  </Link>
+                  <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                    <Button variant="primary" className="w-full">
+                      Sign Up
+                    </Button>
+                  </Link>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   )
