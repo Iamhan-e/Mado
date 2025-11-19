@@ -21,6 +21,14 @@ export default function Navbar() {
             <span>Mado</span>
           </Link>
 
+          <Link
+  href="/dashboard/stories"
+  className="flex items-center gap-2 text-textPrimary hover:text-primary transition-colors"
+>
+  <BookOpen className="h-5 w-5" />
+  <span>My Stories</span>
+</Link>
+
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             <Link
