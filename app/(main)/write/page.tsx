@@ -1,14 +1,39 @@
+import { redirect } from "next/navigation"
+import { auth } from "@/lib/auth"
+import CreateStoryForm from "@/components/create-story-form"
 import { PenSquare } from "lucide-react"
 
-export default function WritePage() {
+export default async function WritePage() {
+  const session = await auth()
+
+  if (!session?.user?.id) {
+    redirect("/login")
+  }
+
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-      <div className="text-center">
-        <PenSquare className="h-16 w-16 text-[#FF6B6B] mx-auto mb-4" />
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Write Your Story</h1>
-        <p className="text-gray-600">
-          This page will allow you to create and manage stories. Coming soon in Phase 5!
-        </p>
+    <div className="min-h-screen bg-background">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-3 bg-primary/10 rounded-xl">
+              <PenSquare className="h-8 w-8 text-primary" />
+            </div>
+            <div>
+              <h1 className="text-3xl font-bold text-textPrimary">
+                Create New Story
+              </h1>
+              <p className="text-textSecondary">
+                Share your story with the world
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Form */}
+        <div className="bg-surface rounded-xl shadow-md border border-gray-200 p-8">
+          <CreateStoryForm userId={session.user.id} />
+        </div>
       </div>
     </div>
   )
